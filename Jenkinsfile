@@ -16,7 +16,7 @@ pipeline{
             }
         }
 
-        stage('Push Image to DockerHub'){
+        stage('Push Image to Docker-Hub'){
             environment{
                 DOCKER_HUB = credentials('dockerhub_credentials')
             }
