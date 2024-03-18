@@ -1,0 +1,54 @@
+version: "3"
+services:
+  hub:
+    image: selenium/hub:4.16
+    ports:
+      - 4444:4444
+
+  chrome:
+    image: selenium/node-chrome:4.16
+    shm_size: '2g'  #browsers are heavy objects and required more memory tu run, ig memory not assigned it will crash
+    depends_on:
+      - hub
+    environment:
+      - SE_EVENT_BUS_HOST=hub   # to understand chrome container where hub is running i.e. communication between hub and chreome container
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_OVERRIDE_MAX_SESSIONS=true
+      - SE_NODE_MAX_SESSIONS=4
+
+  firefox:
+    image: selenium/node-firefox:4.16
+    shm_size: '2g'
+    depends_on:
+      - hub
+    environment:
+      - SE_EVENT_BUS_HOST=hub   # to understand chrome container where hub is running i.e. communication between hub and chreome container
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_OVERRIDE_MAX_SESSIONS=true
+      - SE_NODE_MAX_SESSIONS=2
+
+  vendor-portal:
+    image: devops1977/selenium
+    depends_on:
+      - chrome
+    environment:
+      - BROWSER=chrome
+      - HUB_HOST=hub
+      - THREAD_COUNT=4
+      - TEST_SUITE=vendor-portal.xml
+    volumes:
+      - C:/Users/Sachin/Docker/workspace/03-automation-framework/outout/vendor-portal:/home/selenium-docker/test-output
+
+  flight-reservation:
+    image: devops1977/selenium
+    depends_on:
+    - firefox
+    environment:
+    - BROWSER=firefox
+    - HUB_HOST=hub
+    - THREAD_COUNT=4
+    - TEST_SUITE=flight-reservation.xml
+    volumes:
+    - C:/Users/Sachin/Docker/workspace/03-automation-framework/outout/flight-reservation:/home/selenium-docker/test-output
